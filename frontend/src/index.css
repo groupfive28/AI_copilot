@@ -1,0 +1,80 @@
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: #f5f6f8;
+  color: #1a1a1a;
+}
+
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.status-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background: #eee;
+  margin-bottom: 2rem;
+}
+
+.status-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: #999;
+}
+
+.status-dot.ok {
+  background: #2ea043;
+}
+
+.status-dot.error {
+  background: #d64545;
+}
+
+.upload-card {
+  border: 1px dashed #c4c8cf;
+  border-radius: 12px;
+  padding: 2rem;
+  background: white;
+  text-align: center;
+}
+
+.upload-card input[type="file"] {
+  margin: 1rem 0;
+}
+
+button {
+  font: inherit;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  background: #2f5cff;
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #b7c0d8;
+  cursor: not-allowed;
+}
+
+.result {
+  margin-top: 1.5rem;
+  text-align: left;
+  background: #f0f2f6;
+  border-radius: 8px;
+  padding: 1rem;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}
+
+.error-text {
+  color: #d64545;
+  margin-top: 1rem;
+}
