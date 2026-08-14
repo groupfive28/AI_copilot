@@ -1,5 +1,6 @@
 import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
 
+import LandingPage from "./features/marketing/LandingPage.jsx";
 import ApplicationDetailView from "./features/operations/ApplicationDetailView.jsx";
 import ApplicationsListView from "./features/operations/ApplicationsListView.jsx";
 import OperationsLayout from "./features/operations/OperationsLayout.jsx";
@@ -24,9 +25,9 @@ function OnboardingShell() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/onboarding" replace />} />
-        <Route path="/onboarding" element={<OnboardingShell />} />
+      <Routes> 
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/operations" element={<OperationsLayout />}>
           <Route index element={<ApplicationsListView />} />
           <Route path="applications/:applicationId" element={<ApplicationDetailView />} />

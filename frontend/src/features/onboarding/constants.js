@@ -28,3 +28,26 @@ export const BUSINESS_TYPES = [
   { value: "company_limited_by_guarantee", label: "Company Limited by Guarantee (LTD/GTE)" },
   { value: "incorporated_trustees", label: "Incorporated Trustees (NGO)" },
 ];
+
+// Used by the CAC/TIN/directors wizard's "Upload Corporate Documents" step.
+export const CORPORATE_DOCUMENT_TYPES = [
+  { id: "certificate_of_incorporation", label: "Certificate of Incorporation (Contains CAC Number)" },
+  { id: "account_name", label: "Account Name" },
+  { id: "phone_number", label: "Phone Number" },
+  { id: "email_address", label: "Email Address" },
+  { id: "tin", label: "Tax Identification Number (TIN)" },
+  { id: "nin", label: "National Identification Numbers (NIN)" },
+  { id: "bvn", label: "Bank Verification Numbers (BVN)" },
+  { id: "govt_id_international_passport", label: "Valid government-issued ID - International Passport" },
+  { id: "govt_id_drivers_license", label: "Valid government-issued ID - Driver's License" },
+  { id: "govt_id_voters_card", label: "Valid government-issued ID - Voter's Card" },
+  { id: "govt_id_national_id_card", label: "Valid government-issued ID - National ID Card" },
+  { id: "cac_certificate", label: "CAC Certificate" },
+  { id: "cac_status_report", label: "CAC Status Report" },
+  { id: "board_resolution_form", label: "Board Resolution Form" },
+  { id: "address", label: "Address" },
+  { id: "proof_of_address", label: "Proof of Address" },
+  { id: "passport_photograph", label: "Passport Photograph" },
+  { id: "signature_specimen", label: "Signature specimen for signatories" },
+  { id: "memorandum_of_article", label: "Memorandum of Article" },
+];
