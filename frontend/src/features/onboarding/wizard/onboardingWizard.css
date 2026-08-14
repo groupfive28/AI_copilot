@@ -1,0 +1,212 @@
+.ow-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3eee0;
+  position: relative;
+  padding: 24px;
+}
+
+.ow-company-header {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  font-weight: 600;
+  color: #16233f;
+}
+
+.ow-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 50px -25px rgba(20,30,55,.3);
+}
+
+.ow-form { display: flex; flex-direction: column; gap: 16px; }
+.ow-form h2 { margin: 0; font-size: 22px; color: #16233f; }
+
+.ow-form input {
+  font-size: 15px;
+  padding: 12px 14px;
+  border-radius: 9px;
+  border: 1px solid rgba(22,35,63,.2);
+  outline: none;
+}
+.ow-form input:focus { border-color: #16233f; }
+.ow-form input[readonly] { background: #f5f5f0; color: #555; }
+
+.ow-btn-primary {
+  background: #16233f;
+  color: #f3eee0;
+  border: none;
+  border-radius: 9px;
+  padding: 12px 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ow-btn-primary:hover { opacity: .92; }
+
+.ow-btn-ghost {
+  background: none;
+  border: 1px solid rgba(22,35,63,.3);
+  border-radius: 9px;
+  padding: 12px 18px;
+  cursor: pointer;
+  color: #16233f;
+}
+
+.ow-btn-row { display: flex; gap: 12px; }
+
+.ow-company-name { font-size: 18px; font-weight: 600; color: #16233f; }
+
+.ow-error {
+  background: rgba(168,64,47,.1);
+  color: #a8402f;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.ow-director-list { list-style: none; padding: 0; margin: 0; }
+.ow-director-list li { padding: 8px 0; border-bottom: 1px solid rgba(22,35,63,.1); }
+
+.ow-readonly-fields { display: flex; flex-direction: column; gap: 12px; }
+.ow-readonly-fields label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: #16233f; }
+
+.ow-loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(243,238,224,.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  gap: 20px;
+}
+.ow-loader-coin {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #d9a94e;
+  color: #16233f;
+  font-size: 30px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: ow-bounce 0.9s ease-in-out infinite;
+}
+.ow-loader-text { font-weight: 600; color: #16233f; }
+
+@keyframes ow-bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-14px) scale(1.05); }
+}
+
+.ow-card-wide { max-width: 720px; }
+
+.ow-subtitle { margin: 0; font-size: 14px; color: #5b6478; }
+
+.ow-note {
+  background: rgba(217,169,78,.12);
+  border: 1px solid rgba(217,169,78,.4);
+  color: #7a5a12;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin: 0;
+}
+
+.ow-section-header { display: flex; align-items: flex-start; gap: 16px; }
+.ow-section-icon {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 50%;
+  background: rgba(22,35,63,.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.ow-directors-list-section { display: flex; flex-direction: column; gap: 8px; }
+.ow-directors-list-section h3 { margin: 8px 0 0; font-size: 16px; color: #16233f; }
+
+.ow-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid rgba(22,35,63,.12);
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 14px;
+}
+.ow-table th {
+  text-align: left;
+  background: rgba(22,35,63,.04);
+  padding: 10px 14px;
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #5b6478;
+}
+.ow-table td {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(22,35,63,.08);
+  color: #16233f;
+}
+.ow-avatar-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(22,35,63,.1);
+  color: #16233f;
+  font-size: 11px;
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+.ow-btn-outline {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid #16233f;
+  color: #16233f;
+  border-radius: 9px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ow-btn-outline:hover { background: rgba(22,35,63,.05); }
+
+.ow-btn-row-end { justify-content: flex-end; margin-top: 12px; }
+
+.ow-doc-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.ow-doc-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border: 1px solid rgba(22,35,63,.1);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.ow-doc-filename { color: #5b6478; }
+
+.ow-doc-upload-form { display: flex; flex-direction: column; gap: 12px; }
+.ow-doc-upload-form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: #16233f; }
+.ow-doc-upload-form select {
+  font-size: 15px;
+  padding: 12px 14px;
+  border-radius: 9px;
+  border: 1px solid rgba(22,35,63,.2);
+  background: #fff;
+}
+
+.ow-filename { font-size: 13px; color: #5b6478; }
