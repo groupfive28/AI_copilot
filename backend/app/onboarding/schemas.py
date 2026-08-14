@@ -50,3 +50,14 @@ class ApplicationReceivedResponse(BaseModel):
     application_reference: str
     status: str = "received"
     received_at: datetime
+class WizardApplicationSubmission(BaseModel):
+    company_name: str
+    cac_number: str
+    tin: str | None = None
+    director_nins: list[str]
+
+class WizardApplicationResponse(BaseModel):
+    application_reference: str
+    status: str
+    company_name: str
+    cac_number: str

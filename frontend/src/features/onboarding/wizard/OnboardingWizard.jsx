@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../../../shared/supabase/client.js";
 import { CORPORATE_DOCUMENT_TYPES } from "../constants.js";
+import { submitCorporateWizardApplication } from "../api.js";
 import { uploadCorporateDocument, uploadDirectorPassportPhoto } from "./wizardStorage.js";
 import MoneyLoader from "./MoneyLoader.jsx";
 import "./onboardingWizard.css";
@@ -60,6 +61,7 @@ export default function OnboardingWizard() {
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [error, setError] = useState(null);
+  const [submissionResult, setSubmissionResult] = useState(null);
 
   // Groups every upload from this wizard session together in Storage,
   // since there's no real application reference until submission.
@@ -305,9 +307,39 @@ export default function OnboardingWizard() {
     });
   }
 
-  function handleCorporateDocsFinish() {
-    setStep(STEP.COMING_SOON);
+async function handleCorporateDocsFinish() {
+  if (directors.length === 0) {
+    setError("Add at least one director before submitting.");
+    return;
   }
+
+  const directorNins = directors
+    .map((director) => director.nin)
+    .filter(Boolean);
+
+  if (directorNins.length === 0) {
+    setError("No verified director NINs were found.");
+    return;
+  }
+
+  await withLoading("Submitting your application...", async () => {
+    try {
+      const response = await submitCorporateWizardApplication({
+        companyName,
+        cacNumber,
+        tin,
+        directorNins,
+      });
+
+      setSubmissionResult(response);
+      setStep(STEP.COMING_SOON);
+    } catch (err) {
+      setError(
+        err.message || "Something went wrong submitting the application."
+      );
+    }
+  });
+}
 
   // -------------------------------------------------------------------------
   // Render
@@ -538,17 +570,34 @@ export default function OnboardingWizard() {
 
             <div className="ow-btn-row ow-btn-row-end">
               <button className="ow-btn-ghost" onClick={handleWizardCancel}>Cancel</button>
-              <button className="ow-btn-primary" onClick={handleCorporateDocsFinish}>Finish</button>
-            </div>
+              <button className="ow-btn-primary" onClick={handleCorporateDocsFinish}disabled={loading}>{loading ? "Submitting..." : "Submit Application"}</button>            </div>
           </div>
         )}
 
-        {step === STEP.COMING_SOON && (
-          <div className="ow-form">
-            <h2>Coming soon</h2>
-            <p>We'll build the rest of this flow later.</p>
-          </div>
-        )}
+       {step === STEP.COMING_SOON && (
+  <div className="ow-form ow-success">
+    <div className="ow-success-icon">✓</div>
+
+    <h2>Application submitted</h2>
+
+    <p>
+      Your application for <strong>{companyName}</strong> has been
+      successfully submitted and is now pending review.
+    </p>
+
+    {submissionResult?.application_reference && (
+      <div className="ow-reference">
+        <span>Application Reference</span>
+        <strong>{submissionResult.application_reference}</strong>
+      </div>
+    )}
+
+    <p className="ow-subtitle">
+      We will review the submitted information and documents and update
+      the application status when processing begins.
+    </p>
+  </div>
+)}
       </div>
     </div>
   );

@@ -35,4 +35,69 @@ export async function submitApplication(fields, uploads) {
       documents,
     }),
   });
+
+  import { apiRequest } from "../../shared/api/client.js";
+import { DOCUMENT_CATEGORIES } from "./constants.js";
+
+export async function submitApplication(fields, uploads) {
+  const documents = DOCUMENT_CATEGORIES
+    .filter((category) => uploads[category.id]?.reference)
+    .map((category) => {
+      const entry = uploads[category.id];
+
+      return {
+        category: category.id,
+        document_subtype: entry.subtype || null,
+        file_name: entry.file.name,
+        content_type: entry.file.type || null,
+        storage_path: entry.reference.storagePath,
+        download_url: entry.reference.downloadUrl,
+      };
+    });
+
+  return apiRequest("/api/v1/onboarding/applications", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      corporate_details: {
+        cac_registration_number: fields.cacRegistrationNumber,
+        company_name: fields.companyName,
+        date_of_registration: fields.dateOfRegistration || null,
+        business_type: fields.businessType,
+        tin: fields.tin,
+      },
+      signatory: {
+        full_name: fields.signatoryFullName,
+        email: fields.signatoryEmail,
+        phone_number: fields.signatoryPhoneNumber,
+        designation: fields.signatoryDesignation,
+      },
+      documents,
+    }),
+  });
+}
+
+
+/**
+ * Final submission for the new corporate onboarding wizard.
+ */
+export async function submitCorporateWizardApplication({
+  companyName,
+  cacNumber,
+  tin,
+  directorNins,
+}) {
+  return apiRequest("/api/v1/onboarding/wizard-submit", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      company_name: companyName,
+      cac_number: cacNumber,
+      tin,
+      director_nins: directorNins,
+    }),
+  });
+}
 }
