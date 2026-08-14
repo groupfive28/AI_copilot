@@ -6,9 +6,27 @@ body {
 }
 
 .app {
-  max-width: 640px;
+  max-width: 720px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
+}
+
+.app-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.app-cross-link {
+  font-size: 0.85rem;
+  color: #2f5cff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.app-cross-link:hover {
+  text-decoration: underline;
 }
 
 .status-bar {
@@ -19,7 +37,7 @@ body {
   padding: 0.4rem 0.75rem;
   border-radius: 999px;
   background: #eee;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
 }
 
 .status-dot {
@@ -77,4 +95,91 @@ button:disabled {
 .error-text {
   color: #d64545;
   margin-top: 1rem;
+}
+
+.form-card {
+  background: white;
+  border: 1px solid #e1e4ea;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.form-card fieldset {
+  border: none;
+  border-top: 1px solid #eee;
+  padding: 1rem 0 0;
+  margin: 1rem 0 0;
+}
+
+.form-card legend {
+  font-weight: 600;
+  padding: 0 0 0.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.9rem;
+}
+
+.field input,
+.field select {
+  font: inherit;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #c4c8cf;
+}
+
+.field-error {
+  color: #d64545;
+  font-size: 0.8rem;
+}
+
+.upload-slot {
+  border: 1px solid #e1e4ea;
+  border-radius: 8px;
+  padding: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.upload-slot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.upload-status {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: #eee;
+  text-transform: uppercase;
+}
+
+.upload-status-done {
+  background: #dff5e4;
+  color: #1c7a34;
+}
+
+.upload-status-error {
+  background: #fbe2e2;
+  color: #b0201f;
+}
+
+.upload-status-uploading {
+  background: #e3ebff;
+  color: #2f5cff;
+}
+
+.upload-filename {
+  display: block;
+  font-size: 0.8rem;
+  color: #555;
+  margin-top: 0.35rem;
 }
