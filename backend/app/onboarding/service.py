@@ -6,8 +6,71 @@ from sqlalchemy.orm import Session
 from app.document_processing.models import ExtractedField
 from app.onboarding.models import Application
 from app.onboarding.schemas import ApplicationReceivedResponse, ApplicationSubmission
+from sqlalchemy import text
+from app.core.supabase import get_supabase_client
+from app.onboarding.schemas import (
+    ApplicationReceivedResponse,
+    ApplicationSubmission,
+    WizardApplicationResponse,
+    WizardApplicationSubmission,
+)
 
 
+def receive_wizard_application(
+    db: Session,
+    submission: WizardApplicationSubmission,
+) -> WizardApplicationResponse:
+
+    now = datetime.now(UTC)
+
+    # ------------------------------------------------------------
+    # 1. Update the Penta NIN registry
+    # ------------------------------------------------------------
+
+    supabase = get_supabase_client()
+
+    nin_registry = (
+        supabase
+        .schema("penta_document_registries")
+        .table("nin_registry")
+    )
+
+    for nin in submission.director_nins:
+        result = (
+            nin_registry
+            .update({"Company": submission.cac_number})
+            .eq("nin", nin)
+            .execute()
+        )
+
+        if not result.data:
+            raise ValueError(
+                f"Could not update NIN registry record for NIN {nin}."
+            )
+
+    # ------------------------------------------------------------
+    # 2. Create the application
+    # ------------------------------------------------------------
+
+    application = Application(
+        id=uuid.uuid4(),
+        cac_registration_number=submission.cac_number,
+        company_name=submission.company_name,
+        tin=submission.tin,
+        status="pending",
+        created_at=now,
+        updated_at=now,
+    )
+
+    db.add(application)
+    db.commit()
+
+    return WizardApplicationResponse(
+        application_reference=str(application.id),
+        status="pending",
+        company_name=submission.company_name,
+        cac_number=submission.cac_number,
+    )
 def receive_application(db: Session, submission: ApplicationSubmission) -> ApplicationReceivedResponse:
     """
     Persists the application and one placeholder extracted_fields row per

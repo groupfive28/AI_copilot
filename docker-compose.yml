@@ -44,3 +44,18 @@ services:
 
 volumes:
   db_data:
+
+backend:
+  build: ./backend
+  environment:
+    DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://docverify:docverify@db:5432/docverify}
+    CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+    SUPABASE_URL: ${SUPABASE_URL}
+    SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+  ports:
+    - "8000:8000"
+  volumes:
+    - ./backend:/app
+  depends_on:
+    db:
+      condition: service_healthy

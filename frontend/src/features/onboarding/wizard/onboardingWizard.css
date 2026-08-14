@@ -210,3 +210,45 @@
 }
 
 .ow-filename { font-size: 13px; color: #5b6478; }
+
+.ow-success {
+  text-align: center;
+  align-items: center;
+}
+
+.ow-success-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #e6f4ea;
+  color: #238636;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 auto 8px;
+}
+
+.ow-reference {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #f5f6f8;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ow-reference span {
+  font-size: 12px;
+  color: #5b6478;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.ow-reference strong {
+  color: #16233f;
+  font-size: 15px;
+}
