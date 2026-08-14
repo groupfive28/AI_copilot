@@ -96,9 +96,11 @@ def process_document(
     decide how to report them.
     """
     document_id = str(uuid.uuid4())
-    attempt = count_prior_extractions(application_id, document_category) + 1
+    attempt = 1  # safe default if the prior-count lookup itself fails below
 
     try:
+        attempt = count_prior_extractions(application_id, document_category) + 1
+
         mime_type, _ = mimetypes.guess_type(filename)
         if mime_type is None:
             raise ValueError(f"could not determine mime type for {filename}")
@@ -138,6 +140,12 @@ def process_document(
                 "_filename": filename,
                 "_attempt": attempt,
                 "_type_mismatch_suspected": type_mismatch_suspected,
+                # Categories with no trained Custom Extractor (see
+                # has_type_specific_processor above) fall back to plain OCR,
+                # which returns raw text but no structured entities — save
+                # it, or that category's extraction produces nothing at all
+                # beyond bookkeeping metadata.
+                "_text": result.text,
             },
             confidence_score=avg_confidence,
         )
