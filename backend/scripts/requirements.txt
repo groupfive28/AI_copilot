@@ -1,0 +1,9 @@
+# Extra dependencies for one-off data-loading scripts under backend/scripts/.
+# Not part of the FastAPI app's own requirements.txt, to keep pandas/openpyxl
+# (heavy, load-time-only deps) out of the app's Docker image.
+#
+# Install with: pip install -r backend/requirements.txt -r backend/scripts/requirements.txt
+
+pandas==2.2.3
+openpyxl==3.1.5
+python-dotenv==1.0.1
