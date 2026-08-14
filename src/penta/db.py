@@ -35,6 +35,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import httpx
 from supabase import Client, create_client
 from supabase.lib.client_options import SyncClientOptions
 
@@ -53,7 +54,21 @@ def _get_client() -> Client:
         _client = create_client(
             settings.supabase_url,
             settings.supabase_secret_key,
-            options=SyncClientOptions(schema=settings.supabase_schema),
+            options=SyncClientOptions(
+                schema=settings.supabase_schema,
+                # postgrest-py hardcodes http2=True with no other way to
+                # disable it. Under this service's ThreadPoolExecutor, up to
+                # 8 threads share this one client, and one HTTP/2 connection
+                # multiplexing that many concurrent requests has produced
+                # transient "Resource temporarily unavailable" read errors
+                # under real load. HTTP/1.1 pools multiple connections per
+                # host instead of multiplexing one, which is a better fit
+                # for this access pattern. Auth/schema headers are attached
+                # per-request by postgrest-py regardless of the transport
+                # client's own defaults, so overriding it here doesn't
+                # affect authentication.
+                httpx_client=httpx.Client(http2=False, timeout=120),
+            ),
         )
     return _client
 
