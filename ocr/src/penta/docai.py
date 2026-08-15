@@ -10,6 +10,25 @@ from google.cloud import documentai
 
 from penta.config import settings
 
+_client: documentai.DocumentProcessorServiceClient | None = None
+
+
+def _get_client() -> documentai.DocumentProcessorServiceClient:
+    """Lazy singleton, shared across every call and every thread in the
+    ThreadPoolExecutor. A fresh DocumentProcessorServiceClient() used to be
+    constructed per call — under concurrent extraction that meant several
+    threads creating new gRPC channels at once, which crashed the whole
+    process with a native (non-Python, unrecoverable) abort in gRPC's
+    c-ares DNS resolver: "Check failed: channel_ != nullptr". A single
+    client's channel is safe to use concurrently from multiple threads;
+    it's concurrently *creating* several that isn't."""
+    global _client
+    if _client is None:
+        _client = documentai.DocumentProcessorServiceClient(
+            client_options=ClientOptions(api_endpoint=f"{settings.gcp_location}-documentai.googleapis.com")
+        )
+    return _client
+
 
 @dataclass
 class ExtractionResult:
@@ -20,9 +39,7 @@ class ExtractionResult:
 
 def process_bytes(content: bytes, mime_type: str, processor_id: str) -> ExtractionResult:
     """Send raw document bytes to the given Document AI processor and parse the response."""
-    client = documentai.DocumentProcessorServiceClient(
-        client_options=ClientOptions(api_endpoint=f"{settings.gcp_location}-documentai.googleapis.com")
-    )
+    client = _get_client()
     processor_name = client.processor_path(settings.gcp_project_id, settings.gcp_location, processor_id)
 
     request = documentai.ProcessRequest(

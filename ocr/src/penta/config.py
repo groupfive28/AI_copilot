@@ -1,13 +1,25 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Anchored to this file's location (src/penta/config.py -> project root),
+# not the current working directory. pydantic-settings resolves a relative
+# env_file against the process's cwd at launch time, which silently finds
+# nothing (falling back to blank defaults for everything, no error) if the
+# server is ever started from somewhere other than this exact directory —
+# e.g. an activated venv in a shell that later cd'd elsewhere. That produced
+# a real outage: storage_bucket came through as "", and the empty-string
+# Cloud Storage bucket name blew up deep inside the client library with a
+# confusing IndexError rather than a clear "config missing" message.
+_ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
+
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="penta_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_prefix="penta_", env_file=_ENV_FILE, extra="ignore")
 
     @model_validator(mode="before")
     @classmethod
@@ -31,7 +43,7 @@ class Settings(BaseSettings):
     # Typically a plain Document OCR processor.
     gcp_processor_id: str = ""
 
-    # Per-document-category processor routiing
+    # Per-document-category processor routing
     document_processors: dict[str, str] = {}
 
     storage_bucket: str = ""
