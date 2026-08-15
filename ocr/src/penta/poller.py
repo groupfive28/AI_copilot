@@ -1,20 +1,3 @@
-"""Periodically scans Firebase Storage for any application with documents
-that haven't been processed yet, and runs them through Document AI.
-
-    python -m penta.poller
-
-This is a fallback safety net for anything the portal's POST
-/applications/{application_id}/extract call missed (a dropped request,
-etc.) — see penta.api for the primary, event-triggered path. Uses the exact
-same core (penta.ingest) so a document is recorded identically regardless
-of which path picks it up, with one deliberate difference: unlike the API
-endpoint, this skips any document that already has at least one
-extracted_fields row. The API always (re)processes because a call there is
-an explicit request; this runs on a timer, so reprocessing everything on
-every cycle would burn Document AI calls for no reason. Submitted files are
-never moved, renamed, or deleted either way.
-"""
-
 from __future__ import annotations
 
 import time
