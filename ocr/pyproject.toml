@@ -2,7 +2,6 @@
 name = "penta-ai-copilot"
 version = "0.1.0"
 description = "AI-powered document review and verification system"
-readme = "README.md"
 authors = [
     { name = "hastingstugume", email = "hastingstugume@gmail.com" }
 ]
