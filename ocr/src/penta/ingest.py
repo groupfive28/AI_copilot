@@ -36,7 +36,7 @@ def _log_secondary_event(**kwargs: object) -> None:
     write) failed after a successful extracted_fields insert."""
     try:
         save_audit_event(**kwargs)  # type: ignore[arg-type]
-    except Exception as exc: 
+    except Exception as exc:  # noqa: BLE001 - logged, not fatal
         print(f"failed to record audit event ({kwargs.get('event_type')}): {exc}")
 
 
@@ -141,7 +141,7 @@ def process_document(
             type_mismatch_suspected=type_mismatch_suspected,
             attempt=attempt,
         )
-    except Exception as exc: 
+    except Exception as exc:  # noqa: BLE001 - reported to the caller, not raised
         _log_secondary_event(
             application_id=application_id,
             event_type="extraction_failed",
