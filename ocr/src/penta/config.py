@@ -31,14 +31,7 @@ class Settings(BaseSettings):
     # Typically a plain Document OCR processor.
     gcp_processor_id: str = ""
 
-    # Per-document-category processor routing, keyed by the exact Storage
-    # folder name the frontend uploads into, e.g.
-    #   PENTA_DOCUMENT_PROCESSORS='{"nin": "abc123", "cac_certificate": "def456"}'
-    # Confirmed categories in use: bvn, cac_certificate, nin,
-    # passport_or_drivers_license, proof_of_address, tin, voters_card. Each
-    # value is a Custom Extractor (or other specialized) processor ID
-    # trained/configured for that category in Document AI Workbench. Falls
-    # back to gcp_processor_id for any category not listed here.
+    # Per-document-category processor routiing
     document_processors: dict[str, str] = {}
 
     storage_bucket: str = ""

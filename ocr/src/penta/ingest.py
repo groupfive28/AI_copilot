@@ -1,23 +1,3 @@
-"""Shared document-processing core: given an application's documents
-sitting in Firebase Storage at
-onboarding-applications/{application_id}/{document_category}/{filename},
-run each one through the Document AI processor configured for its
-category and record it against the application in Supabase (see
-penta.db).
-
-Submitted documents are never moved, renamed, or deleted — once a customer
-submits an application, that data stays exactly where they put it. Whether
-a document has been processed, and how many times, lives in Supabase (see
-count_prior_extractions), not in Storage folder structure.
-
-Used by penta.api's POST /applications/{application_id}/extract (the
-primary, portal-triggered path — always (re)processes whatever it finds,
-recording repeat attempts rather than skipping them) and penta.poller (a
-periodic fallback scan that, unlike the API, does skip anything already
-extracted at least once — it runs automatically rather than on an explicit
-trigger, so it shouldn't keep reprocessing the same document forever).
-"""
-
 from __future__ import annotations
 
 import mimetypes
@@ -56,7 +36,7 @@ def _log_secondary_event(**kwargs: object) -> None:
     write) failed after a successful extracted_fields insert."""
     try:
         save_audit_event(**kwargs)  # type: ignore[arg-type]
-    except Exception as exc:  # noqa: BLE001 - logged, not fatal
+    except Exception as exc: 
         print(f"failed to record audit event ({kwargs.get('event_type')}): {exc}")
 
 
@@ -89,14 +69,8 @@ def process_document(
     document_category: str,
     filename: str,
 ) -> ProcessResult:
-    """Extract text/entities from blob and record the attempt against
-    application_id in Supabase. The submitted file itself is never touched
-    — no move, no copy, no delete. Never raises — failures come back as
-    ProcessResult(ok=False, ...) so callers (HTTP handler, poll loop) each
-    decide how to report them.
-    """
     document_id = str(uuid.uuid4())
-    attempt = 1  # safe default if the prior-count lookup itself fails below
+    attempt = 1  
 
     try:
         attempt = count_prior_extractions(application_id, document_category) + 1
@@ -105,10 +79,6 @@ def process_document(
         if mime_type is None:
             raise ValueError(f"could not determine mime type for {filename}")
 
-        # Only a processor actually trained for this category can tell us
-        # anything about whether the upload matches what was expected;
-        # falling back to the generic OCR processor means we have no basis
-        # for a mismatch opinion.
         has_type_specific_processor = document_category in settings.document_processors
         processor_id = settings.document_processors.get(document_category, settings.gcp_processor_id)
         if not processor_id:
@@ -123,36 +93,20 @@ def process_document(
             not result.entities or max_confidence < settings.min_entity_confidence
         )
 
-        # The primary record. If this raises, the whole attempt is
-        # genuinely failed — falls through to the except block below.
         save_extraction(
             application_id=application_id,
             document_id=document_id,
             document_category=document_category,
-            # extracted_fields has no filename/attempt/mismatch columns —
-            # folded into the jsonb blob under reserved keys so they're
-            # still queryable without a schema change. verification_results
-            # isn't used for this: its check_type is constrained to
-            # ('registry_lookup', 'face_verification') — real downstream
-            # business checks, not an OCR confidence heuristic.
             extracted_data={
                 **result.entities,
                 "_filename": filename,
                 "_attempt": attempt,
                 "_type_mismatch_suspected": type_mismatch_suspected,
-                # Categories with no trained Custom Extractor (see
-                # has_type_specific_processor above) fall back to plain OCR,
-                # which returns raw text but no structured entities — save
-                # it, or that category's extraction produces nothing at all
-                # beyond bookkeeping metadata.
                 "_text": result.text,
             },
             confidence_score=avg_confidence,
         )
 
-        # Everything below is supplementary — logged best-effort via
-        # _log_secondary_event, never able to turn this success into a
-        # reported failure.
         if attempt > 1:
             _log_secondary_event(
                 application_id=application_id,
@@ -187,7 +141,7 @@ def process_document(
             type_mismatch_suspected=type_mismatch_suspected,
             attempt=attempt,
         )
-    except Exception as exc:  # noqa: BLE001 - reported to the caller, not raised
+    except Exception as exc: 
         _log_secondary_event(
             application_id=application_id,
             event_type="extraction_failed",

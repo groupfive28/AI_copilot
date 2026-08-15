@@ -1,36 +1,3 @@
-"""Supabase persistence for extracted document data (see penta.ingest).
-
-Writes into the existing shared schema — applications / extracted_fields /
-audit_log. This service does not own or create `applications`: that table
-is populated elsewhere, when the application itself (company name, CAC
-number, TIN, signatory) is created, before any document is ever uploaded.
-We only ever reference an existing application_id, never insert one.
-
-- extracted_fields: one row per extraction attempt (see
-  count_prior_extractions — re-extractions add a new row, they don't
-  overwrite). Confirmed columns: application_id, document_id,
-  document_category, extracted_data (jsonb), confidence_score, created_at
-  — no status/error/filename columns, so those live inside extracted_data
-  (see penta.ingest) or in audit_log instead.
-- audit_log: extraction failures, re-extractions, and suspected
-  document-type mismatches.
-- verification_results is deliberately NOT written here: its check_type is
-  constrained to ('registry_lookup', 'face_verification') — real
-  downstream business checks, not this service's OCR-confidence heuristic.
-  Whatever later builds those checks should write there directly.
-- applications.status is constrained to
-  ('received', 'processing', 'escalated', 'approved', 'rejected') — a
-  business workflow this service only ever nudges forward once, from
-  'received' to 'processing' (see mark_application_processing); the later
-  states are for whatever runs registry_lookup/face_verification, not for
-  us to guess at.
-
-Uses the official Supabase Python SDK, authenticated with the secret
-(service_role) key — no direct Postgres connection, so no database password
-involved. This key bypasses Row Level Security entirely and must never be
-exposed client-side; it lives only in this service's environment.
-"""
-
 from __future__ import annotations
 
 from typing import Any

@@ -1,15 +1,3 @@
-"""Call Google Cloud Document AI and parse its response.
-
-    python -m penta.docai path/to/file.pdf
-
-process_bytes() is processor-agnostic: point it at a plain Document OCR
-processor and you get text with no entities; point it at a Custom Extractor
-(or a prebuilt specialized processor, e.g. an identity-document parser) and
-`entities`/`raw_entities` populate too, straight from whatever schema that
-processor was trained with — this module doesn't need to know field names
-in advance.
-"""
-
 from __future__ import annotations
 
 import mimetypes
@@ -46,11 +34,6 @@ def process_bytes(content: bytes, mime_type: str, processor_id: str) -> Extracti
     entities: dict[str, str] = {}
     raw_entities: list[dict] = []
     for entity in document.entities:
-        # normalized_value.text is Document AI's own cleaned-up value (e.g.
-        # a date field printed as "01 JAN 1990" normalizes to "1990-01-01")
-        # — use it when present so downstream typed columns (dates in
-        # particular) get something a database will actually accept, rather
-        # than whatever format happened to be printed on the document.
         value = entity.normalized_value.text if entity.normalized_value.text else entity.mention_text
         raw_entities.append(
             {"type": entity.type_, "value": value, "mention_text": entity.mention_text, "confidence": entity.confidence}
