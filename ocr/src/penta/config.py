@@ -6,15 +6,6 @@ from typing import Any
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Anchored to this file's location (src/penta/config.py -> project root),
-# not the current working directory. pydantic-settings resolves a relative
-# env_file against the process's cwd at launch time, which silently finds
-# nothing (falling back to blank defaults for everything, no error) if the
-# server is ever started from somewhere other than this exact directory —
-# e.g. an activated venv in a shell that later cd'd elsewhere. That produced
-# a real outage: storage_bucket came through as "", and the empty-string
-# Cloud Storage bucket name blew up deep inside the client library with a
-# confusing IndexError rather than a clear "config missing" message.
 _ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
 
 
@@ -52,22 +43,8 @@ class Settings(BaseSettings):
 
     extract_api_key: str = ""
 
-    # Below this, a type-specific processor returning no/low-confidence
-    # entities is treated as a likely wrong-document-type upload (e.g. a
-    # utility bill submitted where a passport was expected) rather than a
-    # trustworthy extraction — see penta.ingest.
     min_entity_confidence: float = 0.5
 
-    # Supabase persistence for extracted results (see penta.db). Talks to
-    # Supabase's REST API (PostgREST) over HTTPS with the secret
-    # (service_role) key — no direct Postgres connection, so no database
-    # password needed. The secret key bypasses Row Level Security entirely;
-    # it must only ever live server-side, never in client/frontend code.
-    #
-    # applications/extracted_fields/verification_results/audit_log live in
-    # a non-default Postgres schema, not "public" — it must be added to
-    # Data API -> Exposed schemas in the Supabase dashboard, or every
-    # request 404s with PGRST205 regardless of how correct the code is.
     supabase_url: str = ""  # e.g. https://<project-ref>.supabase.co
     supabase_secret_key: str = ""
     supabase_schema: str = "penta_application"
