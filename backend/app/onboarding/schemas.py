@@ -1,7 +1,8 @@
+import uuid
 from datetime import date, datetime
 from enum import Enum
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class DocumentCategory(str, Enum):
@@ -41,6 +42,11 @@ class DocumentReference(BaseModel):
 
 
 class ApplicationSubmission(BaseModel):
+    # Client-generated, so uploaded documents can land in Storage under
+    # this same id before the application exists server-side (the OCR
+    # service looks up documents by application_id, not by any id minted
+    # after the fact). Falls back to a server-generated id if omitted.
+    application_id: uuid.UUID | None = None
     corporate_details: CorporateDetails
     signatory: SignatoryInformation
     documents: list[DocumentReference]
@@ -51,13 +57,21 @@ class ApplicationReceivedResponse(BaseModel):
     status: str = "received"
     received_at: datetime
 class WizardApplicationSubmission(BaseModel):
+    application_id: uuid.UUID | None = None  # see ApplicationSubmission.application_id
     company_name: str
     cac_number: str
-    tin: str | None = None
-    director_nins: list[str]
+    tin: str  # applications.tin is NOT NULL - required here so a missing value 422s instead of failing at the DB
+    # min_length=2 - corporate account opening requires at least 2 directors,
+    # per team decision. The wizard (OnboardingWizard.jsx's MIN_DIRECTORS)
+    # already enforces this before submission; this is the server-side
+    # backstop for that same rule, not a separate requirement.
+    director_nins: list[str] = Field(min_length=2)
+    company_address: str | None = None  # collected in the wizard's dedicated address step
+
 
 class WizardApplicationResponse(BaseModel):
     application_reference: str
     status: str
     company_name: str
     cac_number: str
+    unmatched_director_nins: list[str] = []  # NINs not found in the registry - not an error, just FYI

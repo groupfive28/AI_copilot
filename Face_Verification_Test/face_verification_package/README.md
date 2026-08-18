@@ -43,14 +43,25 @@ Example statuses:
 - `REVIEW_REQUIRED`
 - `INSUFFICIENT_EVIDENCE`
 
-The current experimental threshold is `0.20`. It was selected from the
-project's current test data and should not be treated as a universal
-production biometric threshold.
+Similarity scores are classified into two tiers, not one:
+
+- `>= strong_match_threshold` - strong evidence of the same person
+- `borderline_threshold` to `strong_match_threshold` - borderline; not
+  treated as a definite mismatch on its own
+- `< borderline_threshold` - mismatch
+
+`borderline_threshold` is `MATCH_THRESHOLD` from `config.py` (currently
+`0.20`), and `strong_match_threshold` is always `borderline_threshold + 0.10`.
+Pass `verify_documents(folder, threshold=...)` to override the borderline
+cutoff for a single call - the strong cutoff moves with it. These were
+selected from the project's current test data and should not be treated as
+universal production biometric thresholds.
 
 ## Model
 
 The module uses InsightFace `buffalo_l` with CPU execution. InsightFace may
-download/cache the required model files when `FaceAnalysis` is initialized.
+download/cache the required model files when `FaceAnalysis` is initialized
+(a one-time ~280MB download to `~/.insightface/models/`).
 
-For production deployment, confirm the group's dependency versions and model
-distribution/cache strategy.
+For production deployment, confirm the group's dependency versions (pinned
+in `requirements.txt`) and model distribution/cache strategy.

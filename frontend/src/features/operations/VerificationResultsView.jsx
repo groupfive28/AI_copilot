@@ -2,18 +2,13 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { fetchVerificationResults } from "./api.js";
-import { APPLICATION_STATUS_CONFIG, CHECK_STATUS_CONFIG, DOCUMENT_CATEGORY_LABELS } from "./constants.js";
+import { APPLICATION_STATUS_CONFIG, CHECK_STATUS_CONFIG, CHECK_TYPE_LABELS, DOCUMENT_CATEGORY_LABELS } from "./constants.js";
 import DiscrepancyDetails from "./DiscrepancyDetails.jsx";
 import StatusBadge from "./StatusBadge.jsx";
 
 function formatDate(isoString) {
   return new Date(isoString).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 }
-
-const CHECK_TYPE_LABELS = {
-  registry_lookup: "Registry lookup",
-  face_verification: "Face verification",
-};
 
 export default function VerificationResultsView() {
   const [failedOnly, setFailedOnly] = useState(true);
@@ -87,11 +82,20 @@ export default function VerificationResultsView() {
 
               {group.failures.map((failure, idx) => {
                 const stateCfg = CHECK_STATUS_CONFIG[failure.status] ?? { label: failure.status, role: "neutral" };
+                // director_name is only present once the wizard has
+                // successfully matched that director's NIN against
+                // nin_registry (see backend's application_directors table) -
+                // falls back to a 1-based index label so it's still clear
+                // which director this is even without a matched name.
+                const directorLabel =
+                  failure.director_name ??
+                  (failure.director_index != null ? `Director ${failure.director_index + 1}` : null);
                 return (
                   <div className="ops-failure-item" key={idx}>
                     <div className="ops-failure-item-header">
                       <span className="ops-failure-item-category">
                         {DOCUMENT_CATEGORY_LABELS[failure.document_category] ?? failure.document_category ?? "Unknown document"}
+                        {directorLabel && ` — ${directorLabel}`}
                       </span>
                       <StatusBadge role={stateCfg.role} label={stateCfg.label} />
                       <span className="ops-mono">{CHECK_TYPE_LABELS[failure.check_type] ?? failure.check_type}</span>

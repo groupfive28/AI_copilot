@@ -82,6 +82,22 @@
   color: var(--info);
 }
 
+.ops-sidebar-user {
+  padding: 0 0.65rem 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  word-break: break-all;
+}
+
+.ops-nav-button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+
 .ops-main {
   flex: 1;
   min-width: 0;
@@ -390,6 +406,183 @@
   font-size: 0.88rem;
 }
 
+/* ---------- Decision panel + activity log ---------- */
+.ops-decision-note {
+  width: 100%;
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--page-plane);
+  color: var(--text-primary);
+  resize: vertical;
+  margin-bottom: 0.85rem;
+  box-sizing: border-box;
+}
+
+.ops-decision-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.ops-decision-button {
+  flex: 1;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.55rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.ops-decision-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.ops-decision-button.role-approved:not(:disabled) {
+  background: var(--good-bg);
+  color: var(--good);
+  border-color: transparent;
+}
+
+.ops-decision-button.role-escalated:not(:disabled) {
+  background: var(--warning-bg);
+  color: #8a5c00;
+  border-color: transparent;
+}
+
+.ops-decision-button.role-rejected:not(:disabled) {
+  background: var(--critical-bg);
+  color: var(--critical);
+  border-color: transparent;
+}
+
+.ops-activity-row {
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* ---------- Pipeline stepper ---------- */
+.ops-pipeline-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.ops-pipeline-step {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.ops-pipeline-step:not(:last-child)::after {
+  content: "";
+  width: 1.25rem;
+  height: 1px;
+  background: var(--border);
+  margin-left: 0.5rem;
+}
+
+.ops-pipeline-step-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.ops-pipeline-step.is-done {
+  color: var(--text-secondary);
+}
+
+.ops-pipeline-step.is-done .ops-pipeline-step-dot {
+  background: var(--good);
+}
+
+.ops-pipeline-step.is-current {
+  color: var(--info);
+  font-weight: 600;
+}
+
+.ops-pipeline-step.is-current .ops-pipeline-step-dot {
+  background: var(--info);
+  animation: ops-pipeline-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes ops-pipeline-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+.ops-status-with-stage {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ops-pipeline-stage-inline {
+  font-size: 0.76rem;
+  color: var(--info);
+  font-weight: 500;
+}
+
+/* ---------- Document re-upload ---------- */
+.ops-reupload-form {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem 0.75rem 1.4rem;
+  margin: -0.4rem 0 0.6rem;
+  border-left: 2px solid var(--border);
+}
+
+.ops-reupload-form input[type="file"] {
+  font-size: 0.82rem;
+  max-width: 220px;
+}
+
+.ops-reupload-note {
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--page-plane);
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 160px;
+}
+
+.ops-reupload-button {
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  border: none;
+  background: var(--info);
+  color: white;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ops-reupload-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 /* ---------- Discrepancy panel ---------- */
 .ops-failure-group {
   background: var(--surface);
@@ -474,4 +667,89 @@
 
 .ops-error {
   color: var(--critical);
+}
+
+/* ---------- Login ---------- */
+.ops-login-page {
+  --page-plane: #f9f9f7;
+  --surface: #fcfcfb;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --border: #e1e0d9;
+  --info: #2a78d6;
+  --critical: #d03b3b;
+  --critical-bg: #fbe2e2;
+
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--page-plane);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.ops-login-card {
+  width: 100%;
+  max-width: 340px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 2rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.ops-login-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 0.3rem 0 1.5rem;
+}
+
+.ops-login-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.ops-login-input {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.ops-login-input:focus {
+  outline: 2px solid var(--info);
+  outline-offset: -1px;
+}
+
+.ops-login-error {
+  background: var(--critical-bg);
+  color: var(--critical);
+  font-size: 0.82rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.ops-login-submit {
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.65rem;
+  border-radius: 6px;
+  border: none;
+  background: var(--info);
+  color: white;
+  cursor: pointer;
+}
+
+.ops-login-submit:disabled {
+  opacity: 0.6;
+  cursor: default;
 }

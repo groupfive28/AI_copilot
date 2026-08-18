@@ -10,6 +10,8 @@ import numpy as np
 from insightface.app import FaceAnalysis
 from sklearn.metrics.pairwise import cosine_similarity
 
+from .config import MATCH_THRESHOLD
+
 
 # ============================================================
 # CONFIGURATION
@@ -22,16 +24,19 @@ SUPPORTED_EXTENSIONS = {
     ".webp",
 }
 
-# Strong evidence that two faces belong to the same person.
-STRONG_MATCH_THRESHOLD = 0.30
+# The gap between "borderline" and "strong" evidence. Kept fixed so a
+# caller-supplied threshold (verify_documents(..., threshold=...)) still
+# produces a sensible two-tier classification instead of collapsing to one
+# cutoff - see verify_documents' docstring for why this exists.
+_STRONG_MARGIN = 0.10
 
-# Scores between this value and the strong threshold are
-# considered borderline and should not be treated as definite
-# mismatches.
-BORDERLINE_THRESHOLD = 0.20
-
-# Compatibility with the original API.
-MATCH_THRESHOLD = BORDERLINE_THRESHOLD
+# Module-level defaults, used when verify_documents() is called with no
+# explicit threshold. BORDERLINE_THRESHOLD comes from config.py - the
+# single tunable knob - rather than being redefined here, which is what
+# left it disconnected from config.py before (config.py's MATCH_THRESHOLD
+# was never actually read anywhere).
+BORDERLINE_THRESHOLD = MATCH_THRESHOLD
+STRONG_MATCH_THRESHOLD = BORDERLINE_THRESHOLD + _STRONG_MARGIN
 
 
 # ============================================================
@@ -274,25 +279,27 @@ def _calculate_similarity(
 
 def _classify_similarity(
     similarity: float,
+    strong_threshold: float = STRONG_MATCH_THRESHOLD,
+    borderline_threshold: float = BORDERLINE_THRESHOLD,
 ) -> str:
     """
-    Classify a face similarity score.
+    Classify a face similarity score against the given thresholds.
 
-    >= 0.30
+    >= strong_threshold
         STRONG_MATCH
 
-    0.20 - 0.30
+    borderline_threshold - strong_threshold
         BORDERLINE
 
-    < 0.20
+    < borderline_threshold
         STRONG_MISMATCH
     """
 
-    if similarity >= STRONG_MATCH_THRESHOLD:
+    if similarity >= strong_threshold:
 
         return "STRONG_MATCH"
 
-    if similarity >= BORDERLINE_THRESHOLD:
+    if similarity >= borderline_threshold:
 
         return "BORDERLINE"
 
@@ -305,6 +312,8 @@ def _classify_similarity(
 
 def _build_pairwise_comparisons(
     embeddings: Dict[str, np.ndarray],
+    strong_threshold: float = STRONG_MATCH_THRESHOLD,
+    borderline_threshold: float = BORDERLINE_THRESHOLD,
 ) -> List[Dict[str, Any]]:
     """
     Compare every usable document with every other usable
@@ -323,7 +332,9 @@ def _build_pairwise_comparisons(
         )
 
         classification = _classify_similarity(
-            similarity
+            similarity,
+            strong_threshold,
+            borderline_threshold,
         )
 
         results.append(
@@ -335,7 +346,7 @@ def _build_pairwise_comparisons(
                 "result": (
                     "SAME_PERSON"
                     if similarity
-                    >= BORDERLINE_THRESHOLD
+                    >= borderline_threshold
                     else "DIFFERENT_PERSON"
                 ),
             }
@@ -399,19 +410,12 @@ def _get_similarity(
 def _calculate_document_support(
     files: List[str],
     matrix: Dict[Tuple[str, str], float],
+    strong_threshold: float = STRONG_MATCH_THRESHOLD,
+    borderline_threshold: float = BORDERLINE_THRESHOLD,
 ) -> Dict[str, Dict[str, Any]]:
     """
     Calculate how strongly each document is supported by the
-    other documents.
-
-    Strong match:
-        score >= 0.30
-
-    Borderline:
-        0.20 <= score < 0.30
-
-    Mismatch:
-        score < 0.20
+    other documents, against the given thresholds.
 
     The important difference from the previous implementation
     is that a single weak pair does not automatically make
@@ -441,7 +445,7 @@ def _calculate_document_support(
 
             scores.append(score)
 
-            if score >= STRONG_MATCH_THRESHOLD:
+            if score >= strong_threshold:
 
                 strong_matches.append(
                     {
@@ -450,7 +454,7 @@ def _calculate_document_support(
                     }
                 )
 
-            elif score >= BORDERLINE_THRESHOLD:
+            elif score >= borderline_threshold:
 
                 borderline_matches.append(
                     {
@@ -508,6 +512,8 @@ def _calculate_document_support(
 def _find_dominant_identity_group(
     files: List[str],
     matrix: Dict[Tuple[str, str], float],
+    strong_threshold: float = STRONG_MATCH_THRESHOLD,
+    borderline_threshold: float = BORDERLINE_THRESHOLD,
 ) -> Tuple[List[str], List[str]]:
     """
     Identify the dominant identity group.
@@ -535,6 +541,8 @@ def _find_dominant_identity_group(
     support = _calculate_document_support(
         files,
         matrix,
+        strong_threshold,
+        borderline_threshold,
     )
 
     # --------------------------------------------------------
@@ -578,7 +586,7 @@ def _find_dominant_identity_group(
             file,
         )
 
-        if score >= BORDERLINE_THRESHOLD:
+        if score >= borderline_threshold:
 
             dominant.add(file)
 
@@ -621,11 +629,11 @@ def _find_dominant_identity_group(
                     group_file,
                 )
 
-                if score >= STRONG_MATCH_THRESHOLD:
+                if score >= strong_threshold:
 
                     strong_connections += 1
 
-                elif score >= BORDERLINE_THRESHOLD:
+                elif score >= borderline_threshold:
 
                     borderline_connections += 1
 
@@ -637,11 +645,16 @@ def _find_dominant_identity_group(
                 changed = True
 
             # Otherwise require at least two borderline
-            # connections when the application has enough files.
-            elif (
-                len(files) >= 4
-                and borderline_connections >= 2
-            ):
+            # connections. Not gated on a minimum file count: this
+            # path can only trigger once the dominant group already
+            # has >= 2 members for `file` to be borderline-connected
+            # to (the initial pass above already admits anything
+            # borderline-or-better against the reference alone), so
+            # a 3-file application - reference + one initial member +
+            # one file arriving here - is already a real, common case
+            # for it, not just larger applications. An earlier
+            # `len(files) >= 4` gate excluded exactly that case.
+            elif borderline_connections >= 2:
 
                 dominant.add(file)
                 changed = True
@@ -665,6 +678,8 @@ def _find_dominant_identity_group(
 def _make_application_decision(
     files: List[str],
     matrix: Dict[Tuple[str, str], float],
+    strong_threshold: float = STRONG_MATCH_THRESHOLD,
+    borderline_threshold: float = BORDERLINE_THRESHOLD,
 ) -> Tuple[
     str,
     Optional[bool],
@@ -718,6 +733,8 @@ def _make_application_decision(
         _find_dominant_identity_group(
             files,
             matrix,
+            strong_threshold,
+            borderline_threshold,
         )
     )
 
@@ -784,12 +801,12 @@ def verify_documents(
         Folder containing uploaded document images.
 
     threshold:
-        Retained for compatibility with the original API.
-
-        The production decision logic uses:
-
-            STRONG_MATCH_THRESHOLD = 0.30
-            BORDERLINE_THRESHOLD = 0.20
+        The borderline-match cutoff, used for every classification
+        in this run (pairwise comparisons, document support, and
+        the dominant-identity-group decision). The strong-match
+        cutoff is derived as threshold + 0.10, preserving the
+        module's two-tier design instead of collapsing to one
+        cutoff. Defaults to MATCH_THRESHOLD from config.py.
 
     Returns
     -------
@@ -810,6 +827,9 @@ def verify_documents(
 
     Final regulated decisions remain outside this verifier.
     """
+
+    borderline_threshold = float(threshold)
+    strong_threshold = borderline_threshold + _STRONG_MARGIN
 
     folder = Path(folder)
 
@@ -926,10 +946,10 @@ def verify_documents(
                 threshold
             ),
             "strong_match_threshold": float(
-                STRONG_MATCH_THRESHOLD
+                strong_threshold
             ),
             "borderline_threshold": float(
-                BORDERLINE_THRESHOLD
+                borderline_threshold
             ),
             "documents_analysed": len(
                 usable_files
@@ -958,7 +978,9 @@ def verify_documents(
 
     pairwise_comparisons = (
         _build_pairwise_comparisons(
-            embeddings
+            embeddings,
+            strong_threshold,
+            borderline_threshold,
         )
     )
 
@@ -970,6 +992,8 @@ def verify_documents(
         _calculate_document_support(
             usable_files,
             similarity_matrix,
+            strong_threshold,
+            borderline_threshold,
         )
     )
 
@@ -985,6 +1009,8 @@ def verify_documents(
     ) = _make_application_decision(
         usable_files,
         similarity_matrix,
+        strong_threshold,
+        borderline_threshold,
     )
 
     # ========================================================
@@ -1031,6 +1057,8 @@ def verify_documents(
         _find_dominant_identity_group(
             usable_files,
             similarity_matrix,
+            strong_threshold,
+            borderline_threshold,
         )
     )
 
@@ -1050,11 +1078,11 @@ def verify_documents(
         ),
 
         "strong_match_threshold": float(
-            STRONG_MATCH_THRESHOLD
+            strong_threshold
         ),
 
         "borderline_threshold": float(
-            BORDERLINE_THRESHOLD
+            borderline_threshold
         ),
 
         "documents_analysed": len(

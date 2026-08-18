@@ -2,10 +2,17 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { fetchApplications } from "./api.js";
-import { APPLICATION_STATUS_CONFIG, STATUS_FILTER_OPTIONS } from "./constants.js";
+import { APPLICATION_STATUS_CONFIG, PIPELINE_STAGES, STATUS_FILTER_OPTIONS } from "./constants.js";
 import DataTable from "./DataTable.jsx";
 import StatusBadge from "./StatusBadge.jsx";
 import SummaryCards from "./SummaryCards.jsx";
+
+// How often the list re-fetches while this view is open, so a status change
+// (e.g. a background pipeline finishing) shows up without a manual page
+// refresh. Cheap at this scale - a full re-fetch, not a diff/patch.
+const POLL_INTERVAL_MS = 4000;
+
+const PIPELINE_STAGE_LABELS = Object.fromEntries(PIPELINE_STAGES.map((s) => [s.value, s.label]));
 
 function formatDate(isoString) {
   return new Date(isoString).toLocaleString(undefined, {
@@ -27,22 +34,31 @@ export default function ApplicationsListView() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
 
-    fetchApplications({ status: statusFilter, sortBy, sortDir })
-      .then((response) => {
-        if (!cancelled) setData(response);
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err.message);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    function load({ showLoading }) {
+      if (showLoading) setLoading(true);
+      setError(null);
+
+      return fetchApplications({ status: statusFilter, sortBy, sortDir })
+        .then((response) => {
+          if (!cancelled) setData(response);
+        })
+        .catch((err) => {
+          if (!cancelled) setError(err.message);
+        })
+        .finally(() => {
+          if (!cancelled && showLoading) setLoading(false);
+        });
+    }
+
+    load({ showLoading: true });
+    // Silent background refresh - no loading spinner, so an admin watching
+    // the list doesn't see it flicker every 4 seconds.
+    const intervalId = setInterval(() => load({ showLoading: false }), POLL_INTERVAL_MS);
 
     return () => {
       cancelled = true;
+      clearInterval(intervalId);
     };
   }, [statusFilter, sortBy, sortDir]);
 
@@ -64,7 +80,15 @@ export default function ApplicationsListView() {
       sortable: true,
       render: (row) => {
         const cfg = APPLICATION_STATUS_CONFIG[row.status] ?? { label: row.status, role: "neutral" };
-        return <StatusBadge role={cfg.role} label={cfg.label} />;
+        const showStage = row.pipeline_stage && row.pipeline_stage !== "done";
+        return (
+          <div className="ops-status-with-stage">
+            <StatusBadge role={cfg.role} label={cfg.label} />
+            {showStage && (
+              <span className="ops-pipeline-stage-inline">{PIPELINE_STAGE_LABELS[row.pipeline_stage]}</span>
+            )}
+          </div>
+        );
       },
     },
     {

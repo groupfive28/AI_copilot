@@ -30,6 +30,19 @@ export const BUSINESS_TYPES = [
 ];
 
 // Used by the CAC/TIN/directors wizard's "Upload Corporate Documents" step.
+// cac_certificate, proof_of_address, board_resolution_form, and
+// cac_status_report are deliberately absent - each now has its own
+// dedicated step earlier in the wizard (see OnboardingWizard.jsx's
+// STEP.UTILITY_BILL/CAC_CERTIFICATE_UPLOAD/BOARD_RESOLUTION/STATUS_REPORT),
+// so leaving them here too would let the same document be uploaded twice
+// through two different paths. "address" is also removed - the company's
+// address is now a real text field (STEP.COMPANY_ADDRESS), not a file
+// upload. The govt_id_* options are also absent - a government ID is now
+// collected per-director, alongside their NIN/BVN/photo/signature (see
+// STEP.DIRECTOR_GOVERNMENT_ID), not once for the whole application - face
+// verification and signature verification each compare a director against
+// their own ID, not a shared one, so there's no longer a single
+// application-wide "government ID" slot for this step to offer.
 export const CORPORATE_DOCUMENT_TYPES = [
   { id: "certificate_of_incorporation", label: "Certificate of Incorporation (Contains CAC Number)" },
   { id: "account_name", label: "Account Name" },
@@ -38,16 +51,18 @@ export const CORPORATE_DOCUMENT_TYPES = [
   { id: "tin", label: "Tax Identification Number (TIN)" },
   { id: "nin", label: "National Identification Numbers (NIN)" },
   { id: "bvn", label: "Bank Verification Numbers (BVN)" },
-  { id: "govt_id_international_passport", label: "Valid government-issued ID - International Passport" },
-  { id: "govt_id_drivers_license", label: "Valid government-issued ID - Driver's License" },
-  { id: "govt_id_voters_card", label: "Valid government-issued ID - Voter's Card" },
-  { id: "govt_id_national_id_card", label: "Valid government-issued ID - National ID Card" },
-  { id: "cac_certificate", label: "CAC Certificate" },
-  { id: "cac_status_report", label: "CAC Status Report" },
-  { id: "board_resolution_form", label: "Board Resolution Form" },
-  { id: "address", label: "Address" },
-  { id: "proof_of_address", label: "Proof of Address" },
   { id: "passport_photograph", label: "Passport Photograph" },
   { id: "signature_specimen", label: "Signature specimen for signatories" },
   { id: "memorandum_of_article", label: "Memorandum of Article" },
+];
+
+// Government ID categories a director can upload during their own block in
+// the wizard (see OnboardingWizard.jsx's STEP.DIRECTOR_GOVERNMENT_ID) - the
+// same 4 categories the non-wizard flow's DOCUMENT_CATEGORIES and the
+// backend's PERSONAL_ID_REGISTRY_MAP already recognize.
+export const DIRECTOR_GOVERNMENT_ID_TYPES = [
+  { id: "govt_id_international_passport", label: "International Passport" },
+  { id: "govt_id_drivers_license", label: "Driver's License" },
+  { id: "govt_id_voters_card", label: "Voter's Card" },
+  { id: "govt_id_national_id_card", label: "National ID Card" },
 ];

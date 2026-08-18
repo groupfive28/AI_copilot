@@ -1,15 +1,16 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.onboarding.schemas import ApplicationReceivedResponse, ApplicationSubmission
-from app.onboarding.service import receive_application
 from app.onboarding.schemas import (
     ApplicationReceivedResponse,
     ApplicationSubmission,
     WizardApplicationResponse,
     WizardApplicationSubmission,
 )
+from app.onboarding.service import receive_application, receive_wizard_application
+from app.verification.service import run_post_submission_pipeline
+
 router = APIRouter(prefix="/api/v1/onboarding", tags=["Onboarding Intake"])
 
 
@@ -21,7 +22,7 @@ def ping() -> dict[str, str]:
 
 @router.post("/applications", response_model=ApplicationReceivedResponse)
 def submit_application(
-    submission: ApplicationSubmission, db: Session = Depends(get_db)
+    submission: ApplicationSubmission, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
 ) -> ApplicationReceivedResponse:
     """
     Accepts a corporate account application (form fields + uploaded document
@@ -29,16 +30,18 @@ def submit_application(
     penta_application.applications, and creates a placeholder
     extracted_fields row per document for the OCR pipeline to fill in later.
 
-    Does not trigger OCR/verification/workflow processing yet - that starts
-    once those pipelines exist.
+    OCR extraction, then verification, run as a background task after the
+    response is sent - see app/verification/service.py:run_post_submission_pipeline.
     """
-    return receive_application(db, submission)
-@router.post(
-    "/wizard-submit",
-    response_model=WizardApplicationResponse,
-)
+    result = receive_application(db, submission)
+    background_tasks.add_task(run_post_submission_pipeline, result.application_reference)
+    return result
+
+
+@router.post("/wizard-submit", response_model=WizardApplicationResponse)
 def submit_wizard_application(
-    submission: WizardApplicationSubmission,
-    db: Session = Depends(get_db),
+    submission: WizardApplicationSubmission, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
 ) -> WizardApplicationResponse:
-    return receive_wizard_application(db, submission)
+    result = receive_wizard_application(db, submission)
+    background_tasks.add_task(run_post_submission_pipeline, result.application_reference)
+    return result

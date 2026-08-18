@@ -1,5 +1,5 @@
-insightface
-onnxruntime
-opencv-python
-numpy
-scikit-learn
+insightface==1.0.1
+onnxruntime==1.28.0
+opencv-python==5.0.0.93
+numpy==2.5.2
+scikit-learn==1.9.0

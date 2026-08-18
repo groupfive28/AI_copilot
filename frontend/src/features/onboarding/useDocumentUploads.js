@@ -67,5 +67,5 @@ export function useDocumentUploads() {
     return results;
   }
 
-  return { uploads, setFile, setSubtype, requiredCategoriesMissing, uploadAll };
+  return { uploads, setFile, setSubtype, requiredCategoriesMissing, uploadAll, draftId };
 }

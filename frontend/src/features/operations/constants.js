@@ -10,6 +10,17 @@ export const APPLICATION_STATUS_CONFIG = {
   rejected: { label: "Rejected", role: "critical" },
 };
 
+// Order matters here - it's the left-to-right sequence of the pipeline
+// stepper. Matches the stages backend/app/verification/service.py's
+// run_post_submission_pipeline actually sets, in the order it sets them.
+export const PIPELINE_STAGES = [
+  { value: "extracting", label: "Extracting documents (OCR)" },
+  { value: "verifying_faces", label: "Verifying faces" },
+  { value: "verifying_signatures", label: "Verifying signatures" },
+  { value: "checking_registries", label: "Checking registries" },
+  { value: "done", label: "Done" },
+];
+
 export const DOCUMENT_STATE_CONFIG = {
   pending: { label: "Pending", role: "neutral" },
   verified: { label: "Verified", role: "good" },
@@ -35,7 +46,28 @@ export const DOCUMENT_CATEGORY_LABELS = {
   bvn: "BVN",
   voters_card: "Voter's Card",
   passport_or_drivers_license: "Passport / Driver's License",
-  proof_of_address: "Proof of Address",
+  proof_of_address: "Utility Bill",
+  govt_id_international_passport: "International Passport",
+  govt_id_drivers_license: "Driver's License",
+  govt_id_voters_card: "Voter's Card",
+  govt_id_national_id_card: "National ID Card",
+  board_resolution_form: "Board Resolution Form",
+  cac_status_report: "CAC Status Report",
+  // face_verification results have no real document to look up a category
+  // for (see backend/app/operations/service.py's list_verification_failures) -
+  // the backend synthesizes this exact value for them, since the director's
+  // passport photo is the subject being verified.
+  director_passport_photo: "Director's Passport Photo",
+  // signature_verification results synthesize this the same way
+  // face_verification synthesizes director_passport_photo above - see
+  // backend/app/operations/service.py's list_verification_failures.
+  director_signature_specimen: "Director's Signature Specimen",
+};
+
+export const CHECK_TYPE_LABELS = {
+  registry_lookup: "Registry lookup",
+  face_verification: "Face verification",
+  signature_verification: "Signature verification",
 };
 
 export const STATUS_FILTER_OPTIONS = [

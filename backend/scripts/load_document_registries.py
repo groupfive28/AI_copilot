@@ -1,9 +1,9 @@
 """
 One-off loader: reads PENTA CITIZEN_DATABASE.xlsx (NIN, BVN, Voters Card,
-Intl Passport, Drivers License, National ID, CAC Database_TIN - "Image
-Creation" is intentionally excluded pending confirmation of its contents)
-and loads each sheet into its own Postgres table under the
-penta_document_registries schema.
+Intl Passport, Drivers License, National ID, CAC Database_TIN, PEDCO
+Electricity - "Image Creation" is intentionally excluded pending
+confirmation of its contents) and loads each sheet into its own Postgres
+table under the penta_document_registries schema.
 
 Usage:
     python scripts/load_document_registries.py path/to/workbook.xlsx
@@ -44,6 +44,7 @@ SHEET_TABLE_MAP: dict[str, str] = {
     "Drivers License": "drivers_license_registry",
     "National ID": "national_id_registry",
     "CAC Database_TIN": "cac_tin_registry",
+    "PEDCO Electricity": "pedco_electricity_registry",
 }
 
 TARGET_SCHEMA = "penta_document_registries"

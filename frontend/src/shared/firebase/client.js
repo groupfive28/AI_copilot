@@ -1,5 +1,11 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, signInAnonymously } from "firebase/auth";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInAnonymously,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -35,4 +41,32 @@ export function ensureAnonymousAuth() {
       });
   }
   return signInPromise;
+}
+
+// Admin login for the /operations dashboard - a real (non-anonymous)
+// Firebase account, distinct from the anonymous sign-in above used for
+// document uploads. Access is still enforced server-side (the backend
+// checks the token's email against ADMIN_EMAILS); this only gates the UI.
+export function signInAdmin(email, password) {
+  return signInWithEmailAndPassword(auth, email, password);
+}
+
+export function signOutAdmin() {
+  return signOut(auth);
+}
+
+// True only for a real logged-in account, never for the anonymous user the
+// onboarding flow signs in as.
+export function isAdminUser(user) {
+  return Boolean(user && !user.isAnonymous && user.email);
+}
+
+export function watchAuthState(callback) {
+  return onAuthStateChanged(auth, callback);
+}
+
+export async function getIdToken() {
+  const user = auth.currentUser;
+  if (!isAdminUser(user)) return null;
+  return user.getIdToken();
 }
